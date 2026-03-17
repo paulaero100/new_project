@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chaos & Curiosity — Math, Physics & Chaos Simulations</title>
+  <meta name="description" content="Explore the hidden beauty of chaos theory, mathematical mysteries, and physics simulations. Interactive experiments by Gopal Paul — aerospace engineering student & simulation creator.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>∞</text></svg>">
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">C</div>
+      <span class="nav-logo-text">Chaos & Curiosity</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about">About</a></li>
+      <li><a href="#episodes">Episodes</a></li>
+      <li><a href="#lab">Lab</a></li>
+      <li><a href="#aerospace">Aerospace</a></li>
+      <li><a href="simulations.html" class="nav-cta">Enter Lab ⟶</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero" id="hero">
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Simulating the Unsolvable
+      </div>
+      <h1 class="hero-title">
+        <span class="line1">Chaos</span>
+        <span class="line2">& Curiosity</span>
+      </h1>
+      <p class="hero-subtitle">
+        Where mathematics meets mystery. Explore chaos theory, physics simulations, and the hidden equations that govern our universe.
+      </p>
+      <div class="hero-actions">
+        <a href="https://youtube.com" target="_blank" class="btn-primary" id="ytLink">
+          ▶ Watch on YouTube
+        </a>
+        <a href="simulations.html" class="btn-secondary">
+          ⚗ Interactive Lab
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll-indicator">
+      <span>SCROLL</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════ ABOUT ═══════════ -->
+  <section class="section" id="about">
+    <div class="section-header reveal">
+      <span class="section-label">// The Creator</span>
+      <h2 class="section-title">About Gopal Paul</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-visual reveal">
+        <div class="about-card">
+          <div class="about-card-inner">
+            <div class="about-avatar">GP</div>
+            <h3 class="about-name">Gopal Paul</h3>
+            <p class="about-role">Aerospace Engineering · Final Year</p>
+            <div class="about-tags">
+              <span class="about-tag">Chaos Theory</span>
+              <span class="about-tag">Physics Sim</span>
+              <span class="about-tag">Mathematics</span>
+              <span class="about-tag">Aerospace</span>
+              <span class="about-tag">Python</span>
+              <span class="about-tag">Simulation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="about-text reveal reveal-delay-2">
+        <h3>Simulating the universe, <em style="color:var(--gold)">one equation at a time</em></h3>
+        <p>
+          I'm a <strong>final-year aerospace engineering student</strong> with a fascination for the hidden patterns in mathematics and physics.
+          Through code and simulation, I bring <strong>chaotic systems, mystery equations, and unsolvable problems</strong> to life — making the invisible visible.
+        </p>
+        <p>
+          Every video on <strong>Chaos & Curiosity</strong> starts with a question: <em>"What if we could see the math?"</em>
+          From double pendulums to Lorenz attractors, from fluid dynamics to orbital mechanics — I simulate the equations that textbooks leave as exercises.
+        </p>
+        <div class="about-stats">
+          <div class="stat-box">
+            <div class="stat-number">∞</div>
+            <span class="stat-label">Curiosity</span>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">λ>0</div>
+            <span class="stat-label">Chaos</span>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">RK4</div>
+            <span class="stat-label">Precision</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════ EPISODES ═══════════ -->
+  <section class="section" id="episodes">
+    <div class="section-header reveal">
+      <span class="section-label">// Episodes</span>
+      <h2 class="section-title">Mystery Simulations</h2>
+      <p class="section-desc">Each episode dives deep into a mathematical or physical mystery — visualized through code and simulation.</p>
+    </div>
+    <div class="episodes-grid">
+
+      <!-- Episode 001 -->
+      <div class="episode-card reveal">
+        <div class="episode-thumb">
+          <img src="../thumbnail_ep1.png" alt="Double Pendulum Chaos Simulation">
+          <div class="episode-thumb-overlay">
+            <a href="https://youtube.com" target="_blank" class="play-icon" aria-label="Play Episode 1">▶</a>
+          </div>
+        </div>
+        <div class="episode-info">
+          <div class="episode-meta">
+            <span class="episode-number">EP 001</span>
+            <span class="episode-category">Chaos Theory</span>
+          </div>
+          <h3 class="episode-title">Double Pendulum: Why Can't We Predict the Future?</h3>
+          <p class="episode-desc">Two pendulums start 0.005 radians apart. Same equation. Same gravity. Same start. Yet they diverge into completely different futures. This is chaos theory.</p>
+          <div class="episode-tags">
+            <span class="episode-tag">Lagrangian</span>
+            <span class="episode-tag">Euler-Lagrange</span>
+            <span class="episode-tag">Lyapunov λ</span>
+            <span class="episode-tag">RK4</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Episode 002 (Coming Soon) -->
+      <div class="episode-card reveal reveal-delay-1">
+        <div class="episode-thumb" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #0a0918, #120e2a);">
+          <div style="text-align:center;padding:2rem;">
+            <div style="font-size:3rem;margin-bottom:0.5rem;opacity:0.6;">🦋</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;">Coming Soon</span>
+          </div>
+        </div>
+        <div class="episode-info">
+          <div class="episode-meta">
+            <span class="episode-number">EP 002</span>
+            <span class="episode-category">Strange Attractors</span>
+          </div>
+          <h3 class="episode-title">The Lorenz Butterfly: Order Inside Chaos</h3>
+          <p class="episode-desc">Edward Lorenz discovered that a tiny rounding error created a completely different weather pattern. Explore the beautiful attractor that started chaos theory.</p>
+          <div class="episode-tags">
+            <span class="episode-tag">Lorenz System</span>
+            <span class="episode-tag">Attractors</span>
+            <span class="episode-tag">Sensitivity</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Episode 003 (Coming Soon) -->
+      <div class="episode-card reveal reveal-delay-2">
+        <div class="episode-thumb" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #0a0918, #1a0e18);">
+          <div style="text-align:center;padding:2rem;">
+            <div style="font-size:3rem;margin-bottom:0.5rem;opacity:0.6;">🌊</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--purple);letter-spacing:2px;text-transform:uppercase;">Coming Soon</span>
+          </div>
+        </div>
+        <div class="episode-info">
+          <div class="episode-meta">
+            <span class="episode-number">EP 003</span>
+            <span class="episode-category">Mystery Equations</span>
+          </div>
+          <h3 class="episode-title">Navier-Stokes: The Million Dollar Equation</h3>
+          <p class="episode-desc">One of the seven Millennium Prize Problems. We can simulate it but we can't prove it always has a solution. Watch the unsolvable in action.</p>
+          <div class="episode-tags">
+            <span class="episode-tag">Navier-Stokes</span>
+            <span class="episode-tag">Fluid Dynamics</span>
+            <span class="episode-tag">Millennium</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════ INTERACTIVE LAB ═══════════ -->
+  <section class="section" id="lab">
+    <div class="section-header reveal">
+      <span class="section-label">// Interactive Lab</span>
+      <h2 class="section-title">Play With Chaos</h2>
+      <p class="section-desc">Don't just watch — interact. Run real physics simulations in your browser and explore the mysteries yourself.</p>
+    </div>
+    <div class="lab-showcase">
+      <div class="lab-canvas-wrapper reveal">
+        <canvas id="labPreviewCanvas"></canvas>
+        <div class="lab-canvas-badge">
+          <span class="live-dot"></span>
+          LIVE SIMULATION
+        </div>
+      </div>
+      <div class="lab-text reveal reveal-delay-2">
+        <h3>Your Personal <em style="color:var(--cyan)">Physics Lab</em></h3>
+        <p>Every simulation from the channel is available for you to experiment with. Adjust parameters, change initial conditions, and watch chaos unfold in real-time.</p>
+        <ul class="lab-features">
+          <li><span class="icon">🔬</span> Double Pendulum with adjustable angles & lengths</li>
+          <li><span class="icon">🦋</span> Lorenz Attractor with real-time 3D projection</li>
+          <li><span class="icon">⚡</span> Side-by-side chaos comparison mode</li>
+          <li><span class="icon">🎮</span> Play, Pause, Reset — full control</li>
+        </ul>
+        <a href="simulations.html" class="btn-primary">
+          ⚗ Enter the Lab ⟶
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════ AEROSPACE ═══════════ -->
+  <section class="section" id="aerospace">
+    <div class="section-header reveal">
+      <span class="section-label">// Coming Soon</span>
+      <h2 class="section-title">Aerospace Engineering</h2>
+      <p class="section-desc">As a final-year aerospace student, I'm bringing the most complex simulations from my field to this channel.</p>
+    </div>
+    <div class="aerospace-grid">
+      <div class="aerospace-card reveal">
+        <span class="aerospace-icon">🚀</span>
+        <h3>Orbital Mechanics</h3>
+        <p>Hohmann transfers, gravity assists, and Lagrange point orbits — visualized through simulation.</p>
+        <span class="aerospace-badge">Coming 2026</span>
+      </div>
+      <div class="aerospace-card reveal reveal-delay-1">
+        <span class="aerospace-icon">✈️</span>
+        <h3>Aerodynamics & CFD</h3>
+        <p>How does an airfoil create lift? Watch pressure fields, vortices, and shock waves in real-time.</p>
+        <span class="aerospace-badge">Coming 2026</span>
+      </div>
+      <div class="aerospace-card reveal reveal-delay-2">
+        <span class="aerospace-icon">🛰️</span>
+        <h3>Spacecraft Dynamics</h3>
+        <p>Attitude control, reaction wheels, and the math behind keeping a satellite stable in space.</p>
+        <span class="aerospace-badge">Coming 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <h3>Chaos & Curiosity</h3>
+        <p>Exploring the hidden beauty of mathematics, physics, and chaos — through code and simulation. Created by Gopal Paul.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#episodes">Episodes</a></li>
+          <li><a href="#lab">Lab</a></li>
+          <li><a href="#aerospace">Aerospace</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Links</h4>
+        <ul>
+          <li><a href="https://youtube.com" target="_blank">YouTube Channel</a></li>
+          <li><a href="simulations.html">Interactive Lab</a></li>
+          <li><a href="mailto:gopal@example.com">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Gopal Paul · Chaos & Curiosity</p>
+      <div class="footer-socials">
+        <a href="https://youtube.com" target="_blank" aria-label="YouTube">▶</a>
+        <a href="#" aria-label="GitHub">⌂</a>
+        <a href="#" aria-label="Twitter">✕</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

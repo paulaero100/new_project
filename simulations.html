@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Lab — Chaos & Curiosity</title>
+  <meta name="description" content="Run real physics simulations in your browser. Double Pendulum, Lorenz Attractor, and Chaos Comparison — all interactive.">
+  <link rel="stylesheet" href="sim-style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+</head>
+<body>
+
+  <!-- ═══════════ TOPBAR ═══════════ -->
+  <div class="lab-topbar">
+    <div class="lab-topbar-left">
+      <a href="index.html" class="back-btn">← Home</a>
+      <span class="lab-topbar-title">⚗ Interactive Lab</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ TABS ═══════════ -->
+  <div class="sim-tabs" id="simTabs">
+    <button class="sim-tab active" data-sim="pendulum">
+      🔬 Double Pendulum
+    </button>
+    <button class="sim-tab" data-sim="lorenz">
+      🦋 Lorenz Attractor
+    </button>
+    <button class="sim-tab" data-sim="chaos">
+      ⚡ Chaos Comparison
+    </button>
+  </div>
+
+  <!-- ═══════════ SIM LAYOUT ═══════════ -->
+  <div class="sim-layout">
+    <div class="sim-viewport">
+      <canvas class="sim-canvas" id="simCanvas"></canvas>
+      <div class="sim-info-overlay">
+        <div class="sim-info-badge">
+          <span class="live-dot"></span>
+          <span id="simLabel">DOUBLE PENDULUM</span>
+        </div>
+        <div class="sim-fps" id="fpsDisplay">60 FPS</div>
+      </div>
+    </div>
+
+    <div class="controls-panel" id="controlsPanel">
+      <!-- Controls are dynamically rendered by JS -->
+    </div>
+  </div>
+
+  <script src="sim-script.js"></script>
+</body>
+</html>
