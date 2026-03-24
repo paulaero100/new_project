@@ -587,6 +587,302 @@ function hexToRgba(hex, alpha) {
 
 
 // ═══════════════════════════════════════════════════════════════════
+//  REACTION-DIFFUSION SIMULATION (Gray-Scott Model)
+// ═══════════════════════════════════════════════════════════════════
+const diffusion = {
+  N: 200,
+  dA: 0.16,
+  dB: 0.08,
+  f: 0.035,
+  k: 0.065,
+  speed: 8,       // steps per frame
+  A: null,
+  B: null,
+  imageData: null,
+  // Colormap LUT (256 entries) — dark → purple → gold → bright
+  colorLUT: null,
+  mouseDown: false,
+  mouseX: -1,
+  mouseY: -1,
+
+  buildColorLUT() {
+    this.colorLUT = new Uint8Array(256 * 3);
+    // Stops: 0:#04030d  0.25:#1a0a2a  0.5:#4a1a6a  0.75:#d4a843  1.0:#fff8e0
+    const stops = [
+      [0.00, 4, 3, 13],
+      [0.25, 26, 10, 42],
+      [0.50, 74, 26, 106],
+      [0.75, 212, 168, 67],
+      [1.00, 255, 248, 224],
+    ];
+    for (let i = 0; i < 256; i++) {
+      const t = i / 255;
+      let s0 = stops[0], s1 = stops[1];
+      for (let s = 0; s < stops.length - 1; s++) {
+        if (t >= stops[s][0] && t <= stops[s + 1][0]) {
+          s0 = stops[s]; s1 = stops[s + 1]; break;
+        }
+      }
+      const local = (t - s0[0]) / (s1[0] - s0[0]);
+      this.colorLUT[i * 3]     = Math.round(s0[1] + (s1[1] - s0[1]) * local);
+      this.colorLUT[i * 3 + 1] = Math.round(s0[2] + (s1[2] - s0[2]) * local);
+      this.colorLUT[i * 3 + 2] = Math.round(s0[3] + (s1[3] - s0[3]) * local);
+    }
+  },
+
+  initGrid() {
+    const N = this.N;
+    const len = N * N;
+    this.A = new Float32Array(len);
+    this.B = new Float32Array(len);
+    this.A.fill(1.0);
+    // Seed center region
+    const r = Math.floor(N / 8);
+    const cx = Math.floor(N / 2);
+    const cy = Math.floor(N / 2);
+    for (let y = cy - r; y < cy + r; y++) {
+      for (let x = cx - r; x < cx + r; x++) {
+        const idx = y * N + x;
+        this.A[idx] = 0.50 + (Math.random() - 0.5) * 0.2;
+        this.B[idx] = 0.25 + (Math.random() - 0.5) * 0.2;
+      }
+    }
+    // Also seed a few random small spots
+    for (let s = 0; s < 5; s++) {
+      const sx = Math.floor(Math.random() * (N - 20)) + 10;
+      const sy = Math.floor(Math.random() * (N - 20)) + 10;
+      const sr = 3 + Math.floor(Math.random() * 4);
+      for (let dy = -sr; dy <= sr; dy++) {
+        for (let dx = -sr; dx <= sr; dx++) {
+          if (dx * dx + dy * dy <= sr * sr) {
+            const idx = (sy + dy) * N + (sx + dx);
+            if (idx >= 0 && idx < len) {
+              this.A[idx] = 0.50 + (Math.random() - 0.5) * 0.2;
+              this.B[idx] = 0.25 + (Math.random() - 0.5) * 0.2;
+            }
+          }
+        }
+      }
+    }
+  },
+
+  reset() {
+    this.dA = parseFloat(document.getElementById('rd_dA')?.value || 0.16);
+    this.dB = parseFloat(document.getElementById('rd_dB')?.value || 0.08);
+    this.f  = parseFloat(document.getElementById('rd_f')?.value || 0.035);
+    this.k  = parseFloat(document.getElementById('rd_k')?.value || 0.065);
+    this.speed = parseInt(document.getElementById('rd_speed')?.value || 8);
+    if (!this.colorLUT) this.buildColorLUT();
+    this.initGrid();
+  },
+
+  seedAt(gridX, gridY, radius) {
+    const N = this.N;
+    const r = radius || 5;
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (dx * dx + dy * dy <= r * r) {
+          const x = (gridX + dx + N) % N;
+          const y = (gridY + dy + N) % N;
+          const idx = y * N + x;
+          this.A[idx] = 0.50 + (Math.random() - 0.5) * 0.1;
+          this.B[idx] = 0.25 + (Math.random() - 0.5) * 0.1;
+        }
+      }
+    }
+  },
+
+  step() {
+    const N = this.N;
+    const { dA, dB, f, k, A, B } = this;
+    const newA = new Float32Array(A.length);
+    const newB = new Float32Array(B.length);
+
+    for (let steps = 0; steps < this.speed; steps++) {
+      const srcA = steps === 0 ? A : newA;
+      const srcB = steps === 0 ? B : newB;
+      const dstA = (steps === this.speed - 1) ? this.A : newA;
+      const dstB = (steps === this.speed - 1) ? this.B : newB;
+
+      for (let y = 0; y < N; y++) {
+        const yN = y * N;
+        const yUp = ((y - 1 + N) % N) * N;
+        const yDn = ((y + 1) % N) * N;
+        for (let x = 0; x < N; x++) {
+          const idx = yN + x;
+          const xL = (x - 1 + N) % N;
+          const xR = (x + 1) % N;
+
+          const a = srcA[idx];
+          const b = srcB[idx];
+
+          // Discrete Laplacian (5-point stencil)
+          const lapA = srcA[yUp + x] + srcA[yDn + x] + srcA[yN + xL] + srcA[yN + xR] - 4 * a;
+          const lapB = srcB[yUp + x] + srcB[yDn + x] + srcB[yN + xL] + srcB[yN + xR] - 4 * b;
+
+          const abb = a * b * b;
+          dstA[idx] = a + dA * lapA - abb + f * (1 - a);
+          dstB[idx] = b + dB * lapB + abb - (f + k) * b;
+        }
+      }
+
+      // If not last step, copy dst back to src for next iteration
+      if (steps < this.speed - 1) {
+        this.A.set(newA);
+        this.B.set(newB);
+      }
+    }
+
+    // Handle mouse seeding
+    if (this.mouseDown && this.mouseX >= 0) {
+      this.seedAt(this.mouseX, this.mouseY, 5);
+    }
+  },
+
+  draw() {
+    const w = canvas._w, h = canvas._h;
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
+
+    const N = this.N;
+    // Determine display size (square, centered)
+    const displaySize = Math.min(w * 0.85, h * 0.85);
+    const ox = (w - displaySize) / 2;
+    const oy = (h - displaySize) / 2;
+
+    // Create ImageData at grid resolution, then draw scaled
+    if (!this.imageData || this.imageData.width !== N) {
+      this.imageData = ctx.createImageData(N, N);
+    }
+    const data = this.imageData.data;
+    const lut = this.colorLUT;
+
+    for (let i = 0; i < N * N; i++) {
+      const val = Math.min(1, Math.max(0, this.B[i])) * 2.5; // scale for visibility
+      const ci = Math.min(255, Math.floor(Math.min(1, val) * 255));
+      const i4 = i * 4;
+      data[i4]     = lut[ci * 3];
+      data[i4 + 1] = lut[ci * 3 + 1];
+      data[i4 + 2] = lut[ci * 3 + 2];
+      data[i4 + 3] = 255;
+    }
+
+    // Draw to offscreen canvas at grid resolution, then scale up
+    if (!this._offCanvas) {
+      this._offCanvas = document.createElement('canvas');
+      this._offCtx = this._offCanvas.getContext('2d');
+    }
+    this._offCanvas.width = N;
+    this._offCanvas.height = N;
+    this._offCtx.putImageData(this.imageData, 0, 0);
+
+    // Scale up with smooth interpolation
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(this._offCanvas, ox, oy, displaySize, displaySize);
+
+    // Border glow
+    ctx.strokeStyle = 'rgba(212, 168, 67, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, displaySize, displaySize);
+
+    // Corner decorations
+    const cornerLen = 15;
+    ctx.strokeStyle = C.gold;
+    ctx.lineWidth = 2;
+    // top-left
+    ctx.beginPath(); ctx.moveTo(ox, oy + cornerLen); ctx.lineTo(ox, oy); ctx.lineTo(ox + cornerLen, oy); ctx.stroke();
+    // top-right
+    ctx.beginPath(); ctx.moveTo(ox + displaySize - cornerLen, oy); ctx.lineTo(ox + displaySize, oy); ctx.lineTo(ox + displaySize, oy + cornerLen); ctx.stroke();
+    // bottom-left
+    ctx.beginPath(); ctx.moveTo(ox, oy + displaySize - cornerLen); ctx.lineTo(ox, oy + displaySize); ctx.lineTo(ox + cornerLen, oy + displaySize); ctx.stroke();
+    // bottom-right
+    ctx.beginPath(); ctx.moveTo(ox + displaySize - cornerLen, oy + displaySize); ctx.lineTo(ox + displaySize, oy + displaySize); ctx.lineTo(ox + displaySize, oy + displaySize - cornerLen); ctx.stroke();
+
+    // Info text
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = C.greyDim;
+    ctx.fillText(`f=${this.f.toFixed(4)}  k=${this.k.toFixed(4)}  dA=${this.dA.toFixed(2)}  dB=${this.dB.toFixed(2)}`, w - 15, h - 15);
+    ctx.fillText(`Grid: ${N}×${N}  |  ${this.speed} steps/frame`, w - 15, h - 30);
+
+    // Store display mapping for mouse interaction
+    this._displayOx = ox;
+    this._displayOy = oy;
+    this._displaySize = displaySize;
+  },
+
+  handleMouseDown(e) {
+    if (currentSim !== 'diffusion') return;
+    this.mouseDown = true;
+    this.updateMousePos(e);
+  },
+
+  handleMouseMove(e) {
+    if (currentSim !== 'diffusion' || !this.mouseDown) return;
+    this.updateMousePos(e);
+  },
+
+  handleMouseUp() {
+    this.mouseDown = false;
+    this.mouseX = -1;
+    this.mouseY = -1;
+  },
+
+  updateMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const ox = this._displayOx || 0;
+    const oy = this._displayOy || 0;
+    const size = this._displaySize || 1;
+    const gx = Math.floor((px - ox) / size * this.N);
+    const gy = Math.floor((py - oy) / size * this.N);
+    if (gx >= 0 && gx < this.N && gy >= 0 && gy < this.N) {
+      this.mouseX = gx;
+      this.mouseY = gy;
+    } else {
+      this.mouseX = -1;
+      this.mouseY = -1;
+    }
+  },
+
+  bindMouseEvents() {
+    canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+    canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+    canvas.addEventListener('mouseup', () => this.handleMouseUp());
+    canvas.addEventListener('mouseleave', () => this.handleMouseUp());
+  }
+};
+
+// Preset loader for diffusion
+function loadPreset(name) {
+  const presets = {
+    spots:     { f: 0.035, k: 0.065, dA: 0.16, dB: 0.08 },
+    stripes:   { f: 0.030, k: 0.055, dA: 0.16, dB: 0.08 },
+    labyrinth: { f: 0.025, k: 0.050, dA: 0.20, dB: 0.10 },
+    chaos:     { f: 0.055, k: 0.062, dA: 0.16, dB: 0.08 },
+  };
+  const p = presets[name];
+  if (!p) return;
+  diffusion.f = p.f; diffusion.k = p.k; diffusion.dA = p.dA; diffusion.dB = p.dB;
+  // Update sliders
+  const sF = document.getElementById('rd_f'); if (sF) sF.value = p.f;
+  const sK = document.getElementById('rd_k'); if (sK) sK.value = p.k;
+  const sDA = document.getElementById('rd_dA'); if (sDA) sDA.value = p.dA;
+  const sDB = document.getElementById('rd_dB'); if (sDB) sDB.value = p.dB;
+  updateVal('v_rd_f', p.f.toFixed(4));
+  updateVal('v_rd_k', p.k.toFixed(4));
+  updateVal('v_rd_dA', p.dA.toFixed(2));
+  updateVal('v_rd_dB', p.dB.toFixed(2));
+  // Update active preset button
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.preset-btn[data-preset="${name}"]`)?.classList.add('active');
+  diffusion.initGrid();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
 //  CONTROLS RENDERING
 // ═══════════════════════════════════════════════════════════════════
 function renderControls(sim) {
@@ -726,6 +1022,65 @@ function renderControls(sim) {
           <div class="eq-line">where <span class="cyan">λ > 0</span> (Lyapunov)</div>
         </div>
       </div>
+    `,
+    diffusion: `
+      <div class="controls-section">
+        <div class="controls-section-title">⚙ Playback</div>
+        <div class="btn-group">
+          <button class="ctrl-btn active" id="playBtn" onclick="togglePause()">⏸ Pause</button>
+          <button class="ctrl-btn danger" onclick="resetSim()">↺ Reset</button>
+        </div>
+      </div>
+      <div class="controls-section">
+        <div class="controls-section-title">🎨 Presets</div>
+        <div class="btn-group" style="flex-wrap:wrap">
+          <button class="ctrl-btn preset-btn active" data-preset="spots" onclick="loadPreset('spots')">🐆 Spots</button>
+          <button class="ctrl-btn preset-btn" data-preset="stripes" onclick="loadPreset('stripes')">🦓 Stripes</button>
+          <button class="ctrl-btn preset-btn" data-preset="labyrinth" onclick="loadPreset('labyrinth')">🧠 Labyrinth</button>
+          <button class="ctrl-btn preset-btn" data-preset="chaos" onclick="loadPreset('chaos')">🌀 Chaos</button>
+        </div>
+      </div>
+      <div class="controls-section">
+        <div class="controls-section-title">🧪 Gray-Scott Parameters</div>
+        <div class="control-group">
+          <div class="control-label"><span>Feed rate (f)</span><span class="value" id="v_rd_f">0.0350</span></div>
+          <input type="range" id="rd_f" min="0.01" max="0.08" value="0.035" step="0.001" oninput="updateVal('v_rd_f', parseFloat(this.value).toFixed(4)); diffusion.f=parseFloat(this.value);">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Kill rate (k)</span><span class="value" id="v_rd_k">0.0650</span></div>
+          <input type="range" id="rd_k" min="0.03" max="0.08" value="0.065" step="0.001" oninput="updateVal('v_rd_k', parseFloat(this.value).toFixed(4)); diffusion.k=parseFloat(this.value);">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>D_A (activator diff.)</span><span class="value" id="v_rd_dA">0.16</span></div>
+          <input type="range" id="rd_dA" min="0.05" max="0.30" value="0.16" step="0.01" oninput="updateVal('v_rd_dA', parseFloat(this.value).toFixed(2)); diffusion.dA=parseFloat(this.value);">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>D_B (inhibitor diff.)</span><span class="value" id="v_rd_dB">0.08</span></div>
+          <input type="range" id="rd_dB" min="0.02" max="0.20" value="0.08" step="0.01" oninput="updateVal('v_rd_dB', parseFloat(this.value).toFixed(2)); diffusion.dB=parseFloat(this.value);">
+        </div>
+      </div>
+      <div class="controls-section">
+        <div class="controls-section-title">⚡ Performance</div>
+        <div class="control-group">
+          <div class="control-label"><span>Steps per frame</span><span class="value" id="v_rd_speed">8</span></div>
+          <input type="range" id="rd_speed" min="1" max="20" value="8" step="1" oninput="updateVal('v_rd_speed', this.value); diffusion.speed=parseInt(this.value);">
+        </div>
+      </div>
+      <div class="controls-section">
+        <div class="controls-section-title">🖱️ Interaction</div>
+        <div class="equation-display">
+          <div class="eq-line"><span class="highlight">Click & drag</span> on the canvas</div>
+          <div class="eq-line">to seed new chemical B</div>
+        </div>
+      </div>
+      <div class="controls-section">
+        <div class="controls-section-title">📝 Equations</div>
+        <div class="equation-display">
+          <div class="eq-line"><span class="highlight">∂A/∂t</span> = D_A∇²A − AB² + f(1−A)</div>
+          <div class="eq-line"><span class="highlight">∂B/∂t</span> = D_B∇²B + AB² − (f+k)B</div>
+          <div class="eq-line" style="margin-top:0.4rem;color:var(--cyan)">→ Gray-Scott (Turing 1952)</div>
+        </div>
+      </div>
     `
   };
 
@@ -756,6 +1111,7 @@ function resetSim() {
   if (currentSim === 'pendulum') pendulum.reset();
   else if (currentSim === 'lorenz') lorenz.reset();
   else if (currentSim === 'chaos') chaos.reset();
+  else if (currentSim === 'diffusion') diffusion.reset();
 }
 
 function switchSim(sim) {
@@ -767,7 +1123,7 @@ function switchSim(sim) {
   document.querySelector(`.sim-tab[data-sim="${sim}"]`)?.classList.add('active');
 
   // update label
-  const labels = { pendulum: 'DOUBLE PENDULUM', lorenz: 'LORENZ ATTRACTOR', chaos: 'CHAOS COMPARISON' };
+  const labels = { pendulum: 'DOUBLE PENDULUM', lorenz: 'LORENZ ATTRACTOR', chaos: 'CHAOS COMPARISON', diffusion: 'REACTION DIFFUSION' };
   simLabel.textContent = labels[sim];
 
   renderControls(sim);
@@ -791,6 +1147,7 @@ function mainLoop(timestamp) {
     if (currentSim === 'pendulum') { pendulum.step(); pendulum.draw(); }
     else if (currentSim === 'lorenz') { lorenz.step(); lorenz.draw(); }
     else if (currentSim === 'chaos') { chaos.step(); chaos.draw(); }
+    else if (currentSim === 'diffusion') { diffusion.step(); diffusion.draw(); }
   }
 
   animId = requestAnimationFrame(mainLoop);
@@ -806,6 +1163,8 @@ document.querySelectorAll('.sim-tab').forEach(tab => {
 // ── INIT ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
+  diffusion.buildColorLUT();
+  diffusion.bindMouseEvents();
   switchSim('pendulum');
   mainLoop(performance.now());
 });
